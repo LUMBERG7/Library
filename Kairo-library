@@ -1,0 +1,160 @@
+local Library = {}
+
+local TweenService = game:GetService("TweenService")
+
+function Library:CreateWindow(titleText)
+	local screenGui = Instance.new("ScreenGui", game.Players.LocalPlayer:WaitForChild("PlayerGui"))
+	screenGui.Name = "CustomUI"
+	screenGui.ResetOnSpawn = false
+
+	local main = Instance.new("Frame")
+	main.Name = "Main"
+	main.Size = UDim2.new(0, 450, 0, 300)
+	main.Position = UDim2.new(0.5, -225, 0.5, -150)
+	main.BackgroundColor3 = Color3.fromRGB(0, 115, 180) -- Transparent Blue
+	main.BackgroundTransparency = 0.3
+	main.BorderSizePixel = 0
+	main.Parent = screenGui
+	main.Active = true
+	main.Draggable = true
+
+	local corner = Instance.new("UICorner", main)
+	corner.CornerRadius = UDim.new(0, 16)
+
+	local title = Instance.new("TextLabel")
+	title.Name = "Title"
+	title.Size = UDim2.new(1, 0, 0, 40)
+	title.BackgroundTransparency = 1
+	title.Text = titleText
+	title.TextColor3 = Color3.fromRGB(255, 255, 255)
+	title.Font = Enum.Font.GothamBold
+	title.TextSize = 20
+	title.Parent = main
+
+	local tabHolder = Instance.new("Frame")
+	tabHolder.Name = "Tabs"
+	tabHolder.Size = UDim2.new(0, 120, 1, -40)
+	tabHolder.Position = UDim2.new(0, 0, 0, 40)
+	tabHolder.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	tabHolder.BackgroundTransparency = 0.5
+	tabHolder.BorderSizePixel = 0
+	tabHolder.Parent = main
+
+	local tabLayout = Instance.new("UIListLayout", tabHolder)
+	tabLayout.Padding = UDim.new(0, 4)
+
+	local pageHolder = Instance.new("Frame")
+	pageHolder.Name = "Pages"
+	pageHolder.Position = UDim2.new(0, 120, 0, 40)
+	pageHolder.Size = UDim2.new(1, -120, 1, -40)
+	pageHolder.BackgroundTransparency = 1
+	pageHolder.Parent = main
+
+	local pages = {}
+
+	local window = {}
+
+	function window:AddPage(name)
+		local pageButton = Instance.new("TextButton")
+		pageButton.Size = UDim2.new(1, 0, 0, 30)
+		pageButton.Text = name
+		pageButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+		pageButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+		pageButton.Font = Enum.Font.Gotham
+		pageButton.TextSize = 14
+		pageButton.Parent = tabHolder
+
+		local page = Instance.new("ScrollingFrame")
+		page.Name = name
+		page.Size = UDim2.new(1, 0, 1, 0)
+		page.CanvasSize = UDim2.new(0, 0, 5, 0)
+		page.ScrollBarThickness = 4
+		page.Visible = false
+		page.BackgroundTransparency = 1
+		page.Parent = pageHolder
+
+		local layout = Instance.new("UIListLayout", page)
+		layout.Padding = UDim.new(0, 6)
+
+		pageButton.MouseButton1Click:Connect(function()
+			for _, p in pairs(pageHolder:GetChildren()) do
+				if p:IsA("ScrollingFrame") then
+					p.Visible = false
+				end
+			end
+			page.Visible = true
+		end)
+
+		local section = {}
+
+		function section:AddButton(text, callback)
+			local button = Instance.new("TextButton")
+			button.Size = UDim2.new(1, -10, 0, 30)
+			button.Position = UDim2.new(0, 5, 0, 0)
+			button.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+			button.BackgroundTransparency = 0.4
+			button.Text = text
+			button.TextColor3 = Color3.fromRGB(255, 255, 255)
+			button.Font = Enum.Font.Gotham
+			button.TextSize = 14
+			button.Parent = page
+
+			local corner = Instance.new("UICorner", button)
+			corner.CornerRadius = UDim.new(0, 8)
+
+			button.MouseButton1Click:Connect(function()
+				pcall(callback)
+			end)
+		end
+
+		function section:AddToggle(text, callback)
+			local toggleFrame = Instance.new("Frame")
+			toggleFrame.Size = UDim2.new(1, -10, 0, 30)
+			toggleFrame.Position = UDim2.new(0, 5, 0, 0)
+			toggleFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+			toggleFrame.BackgroundTransparency = 0.4
+			toggleFrame.Parent = page
+
+			local corner = Instance.new("UICorner", toggleFrame)
+			corner.CornerRadius = UDim.new(0, 8)
+
+			local label = Instance.new("TextLabel")
+			label.Text = text
+			label.Size = UDim2.new(0.8, 0, 1, 0)
+			label.BackgroundTransparency = 1
+			label.TextColor3 = Color3.fromRGB(255, 255, 255)
+			label.Font = Enum.Font.Gotham
+			label.TextSize = 14
+			label.Parent = toggleFrame
+
+			local toggle = Instance.new("TextButton")
+			toggle.Size = UDim2.new(0.2, -10, 0.7, 0)
+			toggle.Position = UDim2.new(0.8, 5, 0.15, 0)
+			toggle.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+			toggle.Text = ""
+			toggle.Parent = toggleFrame
+
+			local toggleCorner = Instance.new("UICorner", toggle)
+			toggleCorner.CornerRadius = UDim.new(1, 0)
+
+			local state = false
+
+			toggle.MouseButton1Click:Connect(function()
+				state = not state
+				toggle.BackgroundColor3 = state and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(70, 70, 70)
+				pcall(callback, state)
+			end)
+		end
+
+		table.insert(pages, page)
+		if #pages == 1 then
+			page.Visible = true
+		end
+
+		return section
+	end
+
+	return window
+end
+
+return Library
